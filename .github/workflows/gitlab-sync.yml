@@ -1,0 +1,28 @@
+name: Gitlab Sync
+
+on:
+  push:
+    branches:
+    - main
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Gitlab Sync
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.DEPLOY_KEY }}
+        known_hosts: ${{ secrets.KNOWN_HOSTS }}
+    - name: Push to Gitlab
+      run: |
+        git remote add gitlab git@gitlab.com:${{ github.repository }}.git
+        git push --force gitlab HEAD
